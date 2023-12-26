@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>org.exoplatform.documents-preview</groupId>
+    <artifactId>documents-preview</artifactId>
+    <version>1.0.x-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <packaging>war</packaging>
+  <artifactId>documents-preview-webapp</artifactId>
+  <name>eXo Documents preview - Webapp</name>
+  <build>
+    <finalName>documents-preview</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <packagingExcludes>**/*.less,**/less/**,**/*.vue,css/lib/*,vue-app/**,js/mock/**/*,**-dev.*</packagingExcludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+
