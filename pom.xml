@@ -6,7 +6,7 @@
   <parent>
     <artifactId>addons-exo-parent-pom</artifactId>
     <groupId>org.exoplatform.addons</groupId>
-    <version>18-M01</version>
+    <version>17</version>
   </parent>
   <groupId>org.exoplatform.documents-preview</groupId>
   <artifactId>documents-preview</artifactId>
@@ -15,7 +15,7 @@
   <name>eXo Add-on:: Documents preview</name>
 
   <properties>
-    <addon.exo.ecms.version>6.6.x-SNAPSHOT</addon.exo.ecms.version>
+    <addon.exo.ecms.version>6.5.x-SNAPSHOT</addon.exo.ecms.version>
     <org.artofsolving.jodconverter.version>3.0-eXo03</org.artofsolving.jodconverter.version>
   </properties>
 
