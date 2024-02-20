@@ -15,7 +15,7 @@
   <name>eXo Add-on:: Documents preview</name>
 
   <properties>
-    <addon.exo.ecms.version>6.5.x-SNAPSHOT</addon.exo.ecms.version>
+    <addon.exo.ecms.version>6.5.0</addon.exo.ecms.version>
     <org.artofsolving.jodconverter.version>3.0-eXo03</org.artofsolving.jodconverter.version>
   </properties>
 
