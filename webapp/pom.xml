@@ -11,6 +11,25 @@
   <packaging>war</packaging>
   <artifactId>documents-preview-webapp</artifactId>
   <name>eXo Documents preview - Webapp</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.meeds.social</groupId>
+      <artifactId>social-component-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.meeds.platform-ui</groupId>
+      <artifactId>platform-ui-skin</artifactId>
+      <classifier>sources</classifier>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.meeds.social</groupId>
+      <artifactId>social-component-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
   <build>
     <finalName>documents-preview</finalName>
     <plugins>
@@ -20,6 +39,10 @@
         <configuration>
           <packagingExcludes>**/*.less,**/less/**,**/*.vue,css/lib/*,vue-app/**,js/mock/**/*,**-dev.*</packagingExcludes>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

@@ -6,16 +6,17 @@
   <parent>
     <artifactId>addons-exo-parent-pom</artifactId>
     <groupId>org.exoplatform.addons</groupId>
-    <version>17</version>
+    <version>20</version>
   </parent>
   <groupId>org.exoplatform.documents-preview</groupId>
   <artifactId>documents-preview</artifactId>
-  <version>1.0.x-SNAPSHOT</version>
+  <version>2.0.x-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo Add-on:: Documents preview</name>
 
   <properties>
-    <addon.exo.ecms.version>6.5.5</addon.exo.ecms.version>
+    <addon.exo.ecms.version>7.3.x-maintenance-SNAPSHOT</addon.exo.ecms.version>
+    <addon.exo.documents.version>7.3.x-maintenance-SNAPSHOT</addon.exo.documents.version>
     <org.artofsolving.jodconverter.version>3.0-eXo03</org.artofsolving.jodconverter.version>
   </properties>
 
@@ -31,6 +32,13 @@
         <groupId>org.exoplatform.ecms</groupId>
         <artifactId>ecms</artifactId>
         <version>${addon.exo.ecms.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.documents</groupId>
+        <artifactId>documents-parent</artifactId>
+        <version>${addon.exo.documents.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
