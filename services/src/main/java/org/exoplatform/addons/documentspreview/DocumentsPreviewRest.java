@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -39,6 +40,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -150,7 +152,9 @@ public class DocumentsPreviewRest {
     @ApiResponse(responseCode = "200", description = "Request fulfilled"),
     @ApiResponse(responseCode = "400", description = "Invalid query input"),
     @ApiResponse(responseCode = "404", description = "Resource not found"),
-    @ApiResponse(responseCode = "500", description = "Internal server error") })
+    @ApiResponse(responseCode = "413", description = "Document exceeds the maximum size or page count allowed for preview"),
+    @ApiResponse(responseCode = "500", description = "Internal server error"),
+    @ApiResponse(responseCode = "503", description = "Document conversion service is currently unavailable") })
   public ResponseEntity<InputStreamResource> getDocumentContent(HttpServletRequest request,
                                                                 @Parameter(description = "Document technical identifier", required = true)
                                                                 @PathVariable("id")
@@ -177,9 +181,9 @@ public class DocumentsPreviewRest {
     if (OFFICE_MIME_TYPES.contains(file.getMimeType())) {
       try {
         content = Files.newInputStream(getOrConvertToPdf(id, file).toPath());
-      } catch (DocumentPreviewLimitExceededException e) {
-        LOG.debug("Document '{}' exceeds PDF preview limits: {}", id, e.getMessage());
-        throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, e.getMessage());
+      } catch (DocumentPreviewException e) {
+        LOG.debug("Document '{}' cannot be previewed: {}", id, e.getMessage());
+        throw e;
       } catch (IOException e) {
         LOG.warn("Error converting document '{}' to PDF", id, e);
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -204,6 +208,13 @@ public class DocumentsPreviewRest {
     return builder.body(new InputStreamResource(content));
   }
 
+  @ExceptionHandler(DocumentPreviewException.class)
+  public ResponseEntity<Map<String, Object>> handleDocumentPreviewException(DocumentPreviewException e) {
+    HttpStatus status = e.getReason() == DocumentPreviewErrorReason.CONVERSION_SERVICE_UNAVAILABLE ? HttpStatus.SERVICE_UNAVAILABLE
+                                                                                                     : HttpStatus.PAYLOAD_TOO_LARGE;
+    return ResponseEntity.status(status).body(Map.of("reason", e.getReason().name(), "limit", e.getLimit()));
+  }
+
   private File getOrConvertToPdf(String id, FileContent file) throws IOException {
     Date updatedDate = file.getUpdatedDate();
     String cacheKey = id + "@" + (updatedDate == null ? 0 : updatedDate.getTime());
@@ -221,6 +232,12 @@ public class DocumentsPreviewRest {
   }
 
   private File convertToPdf(FileContent file) throws IOException {
+    if (!jodConverterService.isConnected()) {
+      throw new DocumentPreviewException(DocumentPreviewErrorReason.CONVERSION_SERVICE_UNAVAILABLE,
+                                          0,
+                                          "document conversion service is currently unavailable for document '" + file.getName()
+                                              + "'");
+    }
     String extension;
     try {
       extension = DMSMimeTypeResolver.getInstance().getExtension(file.getMimeType());
@@ -231,11 +248,14 @@ public class DocumentsPreviewRest {
     File output = File.createTempFile("documentspreview_", ".pdf");
     try {
       FileUtils.copyInputStreamToFile(file.getContent(), input);
-      long maxFileSize = getMaxFileSize();
-      if (input.length() > maxFileSize) {
+      long maxFileSizeMb = getMaxFileSizeMb();
+      if (input.length() > maxFileSizeMb * 1024 * 1024) {
         FileUtils.deleteQuietly(output);
-        throw new DocumentPreviewLimitExceededException("document '" + file.getName() + "' of " + input.length()
-            + " bytes exceeds the maximum allowed size of " + maxFileSize + " bytes for PDF preview");
+        throw new DocumentPreviewException(DocumentPreviewErrorReason.MAX_FILE_SIZE_EXCEEDED,
+                                            maxFileSizeMb,
+                                            "document '" + file.getName() + "' of " + input.length()
+                                                + " bytes exceeds the maximum allowed size of " + maxFileSizeMb
+                                                + " MB for PDF preview");
       }
       boolean converted;
       try {
@@ -252,8 +272,11 @@ public class DocumentsPreviewRest {
       long pageCount = getPageCount(output);
       if (pageCount > maxPages) {
         FileUtils.deleteQuietly(output);
-        throw new DocumentPreviewLimitExceededException("document '" + file.getName() + "' has " + pageCount
-            + " pages which exceeds the maximum allowed of " + maxPages + " pages for PDF preview");
+        throw new DocumentPreviewException(DocumentPreviewErrorReason.MAX_PAGES_EXCEEDED,
+                                            maxPages,
+                                            "document '" + file.getName() + "' has " + pageCount
+                                                + " pages which exceeds the maximum allowed of " + maxPages
+                                                + " pages for PDF preview");
       }
       return output;
     } finally {
@@ -273,8 +296,8 @@ public class DocumentsPreviewRest {
     }
   }
 
-  private long getMaxFileSize() {
-    return getLongProperty(MAX_FILE_SIZE_PROPERTY_NAME, DEFAULT_MAX_FILE_SIZE_MB) * 1024 * 1024;
+  private long getMaxFileSizeMb() {
+    return getLongProperty(MAX_FILE_SIZE_PROPERTY_NAME, DEFAULT_MAX_FILE_SIZE_MB);
   }
 
   private long getMaxPages() {
@@ -294,12 +317,32 @@ public class DocumentsPreviewRest {
     }
   }
 
-  private static final class DocumentPreviewLimitExceededException extends IOException {
+  enum DocumentPreviewErrorReason {
+    MAX_FILE_SIZE_EXCEEDED,
+    MAX_PAGES_EXCEEDED,
+    CONVERSION_SERVICE_UNAVAILABLE
+  }
+
+  static final class DocumentPreviewException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    private DocumentPreviewLimitExceededException(String message) {
+    private final DocumentPreviewErrorReason reason;
+
+    private final long                       limit;
+
+    private DocumentPreviewException(DocumentPreviewErrorReason errorReason, long errorLimit, String message) {
       super(message);
+      this.reason = errorReason;
+      this.limit = errorLimit;
+    }
+
+    public DocumentPreviewErrorReason getReason() {
+      return reason;
+    }
+
+    public long getLimit() {
+      return limit;
     }
 
   }

@@ -22,4 +22,12 @@ public interface JodConverterService {
    */
   public boolean convert(File input, File output, String outputFormat) throws OfficeException;
 
+  /**
+   * Tells whether the underlying office process (e.g. LibreOffice) is up and able to
+   * accept conversion tasks.
+   *
+   * @return "True" if the service is enabled and the office process is running, "false" otherwise.
+   */
+  public boolean isConnected();
+
 }

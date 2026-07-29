@@ -39,7 +39,8 @@
   </div>
   <attachments-default-preview
     v-else
-    :attachment="attachment" />
+    :attachment="attachment"
+    :error-message="previewErrorMessage" />
 </template>
 <script>
 export default {
@@ -66,6 +67,8 @@ export default {
     renderedPages: {},
     observer: null,
     objectUrl: null,
+    previewErrorReason: null,
+    previewErrorLimit: null,
   }),
   computed: {
     containerStyle() {
@@ -76,6 +79,16 @@ export default {
     },
     isPdf() {
       return this.attachment?.mimetype === 'application/pdf';
+    },
+    previewErrorMessage() {
+      if (this.previewErrorReason === 'MAX_FILE_SIZE_EXCEEDED') {
+        return this.$t('attachment.alert.documentPreviewMaxSizeExceeded', [this.previewErrorLimit]);
+      } else if (this.previewErrorReason === 'MAX_PAGES_EXCEEDED') {
+        return this.$t('attachment.alert.documentPreviewMaxPagesExceeded', [this.previewErrorLimit]);
+      } else if (this.previewErrorReason === 'CONVERSION_SERVICE_UNAVAILABLE') {
+        return this.$t('attachment.alert.documentPreviewServiceUnavailable');
+      }
+      return null;
     },
   },
   mounted() {
@@ -96,6 +109,8 @@ export default {
     async loadPdf() {
       this.loading = true;
       this.supported = true;
+      this.previewErrorReason = null;
+      this.previewErrorLimit = null;
       try {
         const source = this.isPdf ? this.attachment.downloadUrl : await this.fetchConvertedPdfUrl();
         this.pdfDocument = await window.pdfjsLib.getDocument(source).promise;
@@ -118,6 +133,11 @@ export default {
         credentials: 'include',
       });
       if (!response || !response.ok) {
+        if (response && (response.status === 413 || response.status === 503)) {
+          const error = await response.json().catch(() => null);
+          this.previewErrorReason = error?.reason || null;
+          this.previewErrorLimit = error?.limit || null;
+        }
         throw new Error(`Error converting attachment '${this.attachment.id}' to PDF`);
       }
       const blob = await response.blob();
