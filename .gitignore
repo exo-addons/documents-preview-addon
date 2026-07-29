@@ -28,9 +28,6 @@ dependency-reduced-pom.xml
 *.ipr
 .idea/
 
-# Npm
-node_modules/
-
 #bin folder
 bin/
 
@@ -45,11 +42,6 @@ bin/
 # vsCode settings
 .vscode
 
-# Bin
-bin/
-# Log 
-*.log
-
 # OS
 .DS_Store
 
@@ -60,4 +52,4 @@ rebel-remote.xml
 rebel.xml
 
 # Npm
-node_modules/
+**/node_modules/
