@@ -400,4 +400,44 @@ public class JodConverterServiceImplTest {
     verify(officeManager, times(1)).stop();
   }
 
+  @Test
+  public void isConnectedShouldReturnFalseWhenServiceIsDisabled() throws Exception {
+    JodConverterServiceImpl service = newDisabledService();
+    OfficeManager officeManager = mock(OfficeManager.class);
+    when(officeManager.isRunning()).thenReturn(true);
+    setField(service, "officeManager", officeManager);
+
+    assertFalse(service.isConnected());
+  }
+
+  @Test
+  public void isConnectedShouldReturnFalseWhenOfficeManagerIsNull() throws Exception {
+    JodConverterServiceImpl service = newDisabledService();
+    setField(service, "enable", Boolean.TRUE);
+
+    assertFalse(service.isConnected());
+  }
+
+  @Test
+  public void isConnectedShouldReturnFalseWhenOfficeManagerIsNotRunning() throws Exception {
+    JodConverterServiceImpl service = newDisabledService();
+    setField(service, "enable", Boolean.TRUE);
+    OfficeManager officeManager = mock(OfficeManager.class);
+    when(officeManager.isRunning()).thenReturn(false);
+    setField(service, "officeManager", officeManager);
+
+    assertFalse(service.isConnected());
+  }
+
+  @Test
+  public void isConnectedShouldReturnTrueWhenEnabledAndOfficeManagerIsRunning() throws Exception {
+    JodConverterServiceImpl service = newDisabledService();
+    setField(service, "enable", Boolean.TRUE);
+    OfficeManager officeManager = mock(OfficeManager.class);
+    when(officeManager.isRunning()).thenReturn(true);
+    setField(service, "officeManager", officeManager);
+
+    assertTrue(service.isConnected());
+  }
+
 }

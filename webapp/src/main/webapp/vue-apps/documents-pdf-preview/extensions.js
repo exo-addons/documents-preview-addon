@@ -42,6 +42,10 @@ const supportedFormats =   [
   'text/csv',
   'application/vnd.oasis.opendocument.formula'];
 
+const lang = typeof eXo !== 'undefined' ? eXo.env.portal.language : 'en';
+const url = `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portlet.DocumentsPreview-${lang}.json`;
+exoi18n.loadLanguageAsync(lang, url);
+
 for (let i = 0; i < supportedFormats.length; i++) {
   extensionRegistry.registerExtension('Preview', 'previewExtensions', {
     id: `${supportedFormats[i]}-preview`,

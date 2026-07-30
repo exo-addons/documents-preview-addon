@@ -78,6 +78,7 @@ public class DocumentsPreviewRestTest {
 
     documentFileService = mock(DocumentFileService.class);
     jodConverterService = mock(JodConverterService.class);
+    when(jodConverterService.isConnected()).thenReturn(true);
     request = mock(HttpServletRequest.class);
     when(request.getRemoteUser()).thenReturn(REMOTE_USER);
     cacheStore = new HashMap<>();
@@ -310,23 +311,30 @@ public class DocumentsPreviewRestTest {
   }
 
   @Test
-  public void getDocumentContentShouldReturn413WhenInputFileExceedsMaxFileSize() throws Exception {
+  public void getDocumentContentShouldThrowLimitExceededWhenInputFileExceedsMaxFileSize() throws Exception {
     System.setProperty(MAX_FILE_SIZE_PROPERTY_NAME, "0");
     DocumentsPreviewRest rest = newRest();
     FileContent fileContent = newFileContent("application/msword", "some content".getBytes(StandardCharsets.UTF_8),
                                               "report.doc", null);
     when(documentFileService.getDocumentContent(DOCUMENT_ID, REMOTE_USER)).thenReturn(fileContent);
 
-    ResponseStatusException exception =
-                                       assertThrows(ResponseStatusException.class,
-                                                     () -> rest.getDocumentContent(request, DOCUMENT_ID));
+    DocumentsPreviewRest.DocumentPreviewException exception =
+                                                             assertThrows(DocumentsPreviewRest.DocumentPreviewException.class,
+                                                                          () -> rest.getDocumentContent(request, DOCUMENT_ID));
 
-    assertEquals(HttpStatus.PAYLOAD_TOO_LARGE, exception.getStatusCode());
+    assertEquals(DocumentsPreviewRest.DocumentPreviewErrorReason.MAX_FILE_SIZE_EXCEEDED, exception.getReason());
+    assertEquals(0L, exception.getLimit());
     verify(jodConverterService, never()).convert(any(), any(), anyString());
+
+    ResponseEntity<Map<String, Object>> response = rest.handleDocumentPreviewException(exception);
+
+    assertEquals(HttpStatus.PAYLOAD_TOO_LARGE, response.getStatusCode());
+    assertEquals("MAX_FILE_SIZE_EXCEEDED", response.getBody().get("reason"));
+    assertEquals(0L, response.getBody().get("limit"));
   }
 
   @Test
-  public void getDocumentContentShouldReturn413WhenConvertedDocumentExceedsMaxPages() throws Exception {
+  public void getDocumentContentShouldThrowLimitExceededWhenConvertedDocumentExceedsMaxPages() throws Exception {
     System.setProperty(MAX_PAGES_PROPERTY_NAME, "1");
     DocumentsPreviewRest rest = newRest();
     mockConversionTo(buildMinimalPdf(2));
@@ -334,11 +342,41 @@ public class DocumentsPreviewRestTest {
                                               "report.doc", null);
     when(documentFileService.getDocumentContent(DOCUMENT_ID, REMOTE_USER)).thenReturn(fileContent);
 
-    ResponseStatusException exception =
-                                       assertThrows(ResponseStatusException.class,
-                                                     () -> rest.getDocumentContent(request, DOCUMENT_ID));
+    DocumentsPreviewRest.DocumentPreviewException exception =
+                                                             assertThrows(DocumentsPreviewRest.DocumentPreviewException.class,
+                                                                          () -> rest.getDocumentContent(request, DOCUMENT_ID));
 
-    assertEquals(HttpStatus.PAYLOAD_TOO_LARGE, exception.getStatusCode());
+    assertEquals(DocumentsPreviewRest.DocumentPreviewErrorReason.MAX_PAGES_EXCEEDED, exception.getReason());
+    assertEquals(1L, exception.getLimit());
+
+    ResponseEntity<Map<String, Object>> response = rest.handleDocumentPreviewException(exception);
+
+    assertEquals(HttpStatus.PAYLOAD_TOO_LARGE, response.getStatusCode());
+    assertEquals("MAX_PAGES_EXCEEDED", response.getBody().get("reason"));
+    assertEquals(1L, response.getBody().get("limit"));
+  }
+
+  @Test
+  public void getDocumentContentShouldThrowServiceUnavailableWhenConversionServiceIsDisconnected() throws Exception {
+    DocumentsPreviewRest rest = newRest();
+    when(jodConverterService.isConnected()).thenReturn(false);
+    FileContent fileContent = newFileContent("application/msword", "doc-bytes".getBytes(StandardCharsets.UTF_8),
+                                              "report.doc", null);
+    when(documentFileService.getDocumentContent(DOCUMENT_ID, REMOTE_USER)).thenReturn(fileContent);
+
+    DocumentsPreviewRest.DocumentPreviewException exception =
+                                                             assertThrows(DocumentsPreviewRest.DocumentPreviewException.class,
+                                                                          () -> rest.getDocumentContent(request, DOCUMENT_ID));
+
+    assertEquals(DocumentsPreviewRest.DocumentPreviewErrorReason.CONVERSION_SERVICE_UNAVAILABLE, exception.getReason());
+    assertEquals(0L, exception.getLimit());
+    verify(jodConverterService, never()).convert(any(), any(), anyString());
+
+    ResponseEntity<Map<String, Object>> response = rest.handleDocumentPreviewException(exception);
+
+    assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
+    assertEquals("CONVERSION_SERVICE_UNAVAILABLE", response.getBody().get("reason"));
+    assertEquals(0L, response.getBody().get("limit"));
   }
 
   @Test

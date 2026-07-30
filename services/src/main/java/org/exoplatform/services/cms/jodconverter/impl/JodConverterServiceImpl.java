@@ -202,4 +202,11 @@ public class JodConverterServiceImpl implements JodConverterService, Startable {
     return false;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  public boolean isConnected() {
+    return enable && officeManager != null && officeManager.isRunning();
+  }
+
 }
