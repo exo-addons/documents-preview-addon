@@ -11,27 +11,27 @@
     <init-params>
       <value-param>
         <name>port</name>
-        <value>${wcm.jodconverter.portnumbers}</value>
+        <value>${exo.jodconverter.portnumbers}</value>
       </value-param>
       <value-param>
         <name>officeHome</name>
-        <value>${wcm.jodconverter.officehome}</value>
+        <value>${exo.jodconverter.officehome}</value>
       </value-param>
       <value-param>
         <name>taskQueueTimeout</name>
-        <value>${wcm.jodconverter.taskqueuetimeout}</value>
+        <value>${exo.jodconverter.taskqueuetimeout}</value>
       </value-param>
       <value-param>
         <name>taskExecutionTimeout</name>
-        <value>${wcm.jodconverter.taskexecutiontimeout}</value>
+        <value>${exo.jodconverter.taskexecutiontimeout}</value>
       </value-param>
       <value-param>
         <name>maxTasksPerProcess</name>
-        <value>${wcm.jodconverter.maxtasksperprocess}</value>
+        <value>${exo.jodconverter.maxtasksperprocess}</value>
       </value-param>
       <value-param>
         <name>retryTimeout</name>
-        <value>${wcm.jodconverter.retrytimeout}</value>
+        <value>${exo.jodconverter.retrytimeout}</value>
       </value-param>
     </init-params>
   </component>
