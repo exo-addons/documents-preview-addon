@@ -51,9 +51,9 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public class DocumentsPreviewRestTest {
 
-  private static final String MAX_FILE_SIZE_PROPERTY_NAME = "exo.ecms.documents.pdfviewer.max-file-size";
+  private static final String MAX_FILE_SIZE_PROPERTY_NAME = "exo.documents.preview.max-file-size";
 
-  private static final String MAX_PAGES_PROPERTY_NAME     = "exo.ecms.documents.pdfviewer.max-pages";
+  private static final String MAX_PAGES_PROPERTY_NAME     = "exo.documents.preview.max-pages";
 
   private static final String DOCUMENT_ID                 = "42";
 
