@@ -34,7 +34,7 @@ import org.exoplatform.container.xml.ValueParam;
  */
 public class JodConverterServiceImplTest {
 
-  private static final String ENABLE_PROPERTY      = "wcm.jodconverter.enable";
+  private static final String ENABLE_PROPERTY      = "exo.jodconverter.enable";
 
   // JODConverter's OfficeUtils.getDefaultOfficeHome() reads this system property first, before
   // falling back to platform-specific auto-detection (e.g. a real LibreOffice install that may or

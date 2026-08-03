@@ -30,7 +30,7 @@ public class JodConverterServiceImpl implements JodConverterService, Startable {
 
   public JodConverterServiceImpl(InitParams initParams) throws Exception {
     int ports[];
-    String enableJod = System.getProperty("wcm.jodconverter.enable");
+    String enableJod = System.getProperty("exo.jodconverter.enable");
     if(enableJod == null || enableJod.isEmpty()) {
       enable = true;
     } else {
@@ -176,7 +176,7 @@ public class JodConverterServiceImpl implements JodConverterService, Startable {
   public boolean convert(File input, File output, String outputFormat) throws OfficeException {
     if(!enable) {
       LOG.debug("JodConverter is disabled so you cannot view this document! " +
-              "To enable it, please change wcm.jodconverter.enable=true in configuration.properties file");
+              "To enable it, please change exo.jodconverter.enable=true in configuration.properties file");
       return false;
     }
     if (officeManager != null && officeManager.isRunning()) {
