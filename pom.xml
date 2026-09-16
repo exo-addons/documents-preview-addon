@@ -10,13 +10,13 @@
   </parent>
   <groupId>org.exoplatform.documents-preview</groupId>
   <artifactId>documents-preview</artifactId>
-  <version>2.0.x-SNAPSHOT</version>
+  <version>3.0.x-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo Add-on:: Documents preview</name>
 
   <properties>
-    <addon.exo.ecms.version>7.2.x-SNAPSHOT</addon.exo.ecms.version>
-    <addon.exo.documents.version>7.2.x-SNAPSHOT</addon.exo.documents.version>
+    <addon.exo.ecms.version>7.3.x-SNAPSHOT</addon.exo.ecms.version>
+    <addon.exo.documents.version>7.3.x-SNAPSHOT</addon.exo.documents.version>
     <org.artofsolving.jodconverter.version>3.0-eXo03</org.artofsolving.jodconverter.version>
   </properties>
 
@@ -50,32 +50,4 @@
     </dependencies>
   </dependencyManagement>
 
-  <profiles>
-    <profile>
-      <id>project-repositories</id>
-      <activation>
-        <property>
-          <name>!skip-project-repositories</name>
-        </property>
-      </activation>
-      <repositories>
-        <repository>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-          <id>repository.exoplatform.org</id>
-          <url>https://repository.exoplatform.org/public</url>
-        </repository>
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-          <id>repository.exoplatform.org</id>
-          <url>https://repository.exoplatform.org/public</url>
-        </pluginRepository>
-      </pluginRepositories>
-    </profile>
-  </profiles>
 </project>

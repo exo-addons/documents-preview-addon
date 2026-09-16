@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.exoplatform.documents-preview</groupId>
     <artifactId>documents-preview</artifactId>
-    <version>2.0.x-SNAPSHOT</version>
+    <version>3.0.x-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
